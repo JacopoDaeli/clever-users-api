@@ -5,6 +5,7 @@
   "author": "Jacopo Daeli <jacopo.daeli@gmail.com>",
   "clever": "0.1.x",
   "dependencies": {
-
+    "jsonwebtoken": "^5.4.0",
+    "passport-jwt": "^1.2.1"
   }
 }

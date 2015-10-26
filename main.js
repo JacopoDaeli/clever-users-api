@@ -11,6 +11,18 @@ UsersApiPackage
   .attach({
     where: '/users'
   })
-  .routes(['app', 'config', 'database'])
+  .routes(['app', 'config', 'database', 'auth'])
   .models()
   .register()
+
+// Register auth
+cleverCore.register('auth', (config, database, passport) => {
+  require('./passport')(config, database, passport)
+
+  // TODO: isAuthorized
+  const auth = {
+    authenticate: passport.authenticate.bind(passport)
+  }
+
+  return auth
+})

@@ -6,16 +6,20 @@ const CleverCore = require('clever-core')
 // Packages dependencies
 const express = require('express')
 const router = express.Router()
-const ejwt = require('express-jwt')
+// const ejwt = require('express-jwt')
 const jwt = require('jsonwebtoken')
 
 // Exports
-module.exports = function(UsersApiPackage, app, config, db) {
+module.exports = function(UsersApiPackage, app, config, db, auth) {
 
   const User = db.models.User
 
   // TODO: isAuthorized && isRevoked
-  const isAuthenticated = ejwt({ secret: process.env.JWT_SECRET || 'shhh' })
+  // const isAuthenticated = ejwt({ secret: process.env.JWT_SECRET || 'shhh' })
+
+  // const auth = {
+  //   authenticate: ejwt({ secret: process.env.JWT_SECRET || 'shhh' })
+  // }
 
   function checkSequelizeError (next, err) {
     if (err && err.name) {
@@ -64,8 +68,8 @@ module.exports = function(UsersApiPackage, app, config, db) {
 
   }
 
-  // Get TiZR Users
-  router.get('/users', isAuthenticated, (req, res, next) => {
+  // Get Users
+  router.get('/users', auth.authenticate('jwt', { session: false }), (req, res, next) => {
     User
       .findAll()
       .then(users => {
@@ -76,8 +80,8 @@ module.exports = function(UsersApiPackage, app, config, db) {
       .catch(next)
   })
 
-  // Add TiZR User
-  router.post('/users', isAuthenticated, (req, res, next) => {
+  // Add User
+  router.post('/users', auth.authenticate('jwt', { session: false }), (req, res, next) => {
 
     // VALIDATION
     const error = userValidation(req)
@@ -92,8 +96,8 @@ module.exports = function(UsersApiPackage, app, config, db) {
 
   })
 
-  // Update TiZR User
-  router.put('/users/:id', isAuthenticated, (req, res, next) => {
+  // Update User
+  router.put('/users/:id', auth.authenticate('jwt', { session: false }), (req, res, next) => {
 
     // VALIDATION
     const error = userValidation(req, true)
@@ -112,8 +116,8 @@ module.exports = function(UsersApiPackage, app, config, db) {
 
   })
 
-  // Delete TiZR User
-  router.delete('/users/:id', isAuthenticated, (req, res, next) => {
+  // Delete User
+  router.delete('/users/:id', auth.authenticate('jwt', { session: false }), (req, res, next) => {
 
     models.sequelize.transaction(t => {
       return Token
@@ -135,7 +139,7 @@ module.exports = function(UsersApiPackage, app, config, db) {
 
   })
 
-  // TiZR User auth
+  // User auth
   router.post('/users/authenticate', (req, res, next) => {
 
     req.checkBody('email', 'email must be a valid email address').isEmail()
@@ -189,7 +193,7 @@ module.exports = function(UsersApiPackage, app, config, db) {
 
   })
 
-  // Exta
+  // TODO: TO REMOVE
   router.post('/users/hash-password', (req, res, next) => {
 
     req.checkBody('password', 'password is required').notEmpty()
@@ -212,9 +216,6 @@ module.exports = function(UsersApiPackage, app, config, db) {
         hashedPassword: hashedPassword
       })
   })
-
-
-  module.exports = router
 
   return router
 

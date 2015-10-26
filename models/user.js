@@ -39,7 +39,7 @@ module.exports = function(sequelize, DataTypes) {
     tableName: 'user',
     classMethods: {
       associate (models) {
-        User.hasMany(models.Token)
+
       },
       makeSalt() {
         return crypto.randomBytes(16).toString('base64');
@@ -67,7 +67,7 @@ module.exports = function(sequelize, DataTypes) {
       }
     }
   })
-  
+
   return User
 
 }
