@@ -9,7 +9,7 @@ var UsersApiPackage = new Package('users-api')
 // All CLEVER packages require registration
 UsersApiPackage
   .attach({
-    where: '/users'
+    where: '/'
   })
   .routes(['app', 'config', 'database', 'auth'])
   .models()

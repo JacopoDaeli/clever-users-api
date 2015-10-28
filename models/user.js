@@ -4,6 +4,8 @@ const crypto = require('crypto')
 
 module.exports = function(sequelize, DataTypes) {
 
+  console.log('ciao')
+
   const User = sequelize.define('User', {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true},
     email: { type: DataTypes.STRING, unique: true, allowNull: false},
@@ -24,14 +26,16 @@ module.exports = function(sequelize, DataTypes) {
     },
     hashed_password: DataTypes.STRING,
     salt: DataTypes.STRING,
-    firstname: { type: DataTypes.STRING, allowNull: false},
-    lastname: { type: DataTypes.STRING, allowNull: false},
+    firstname: { type: DataTypes.STRING, allowNull: true},
+    lastname: { type: DataTypes.STRING, allowNull: true},
     roles: {
       type: DataTypes.ARRAY(DataTypes.STRING),
       set (role) {
-        this.setDataValue('roles', ['authenticated', role])
+        let roles = [role]
+        if (this.roles) roles = this.roles.concat(roles)
+        this.setDataValue('roles', roles)
       },
-      allowNull: false
+      allowNull: true
     }
   }, {
     paranoid: true,

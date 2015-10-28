@@ -12,8 +12,6 @@ const jwt = require('jsonwebtoken')
 // Exports
 module.exports = function(UsersApiPackage, app, config, db, auth) {
 
-  const User = db.models.User
-
   // TODO: isAuthorized && isRevoked
   // const isAuthenticated = ejwt({ secret: process.env.JWT_SECRET || 'shhh' })
 
@@ -40,16 +38,14 @@ module.exports = function(UsersApiPackage, app, config, db, auth) {
     if (update === true) {
       req.checkBody('email', 'email must be a valid email address').optional().isEmail()
       req.checkBody('password', 'password cannot be empty').optional().notEmpty()
-      req.checkBody('firstname', 'firstname cannot be empty').optional().notEmpty()
-      req.checkBody('lastname', 'lastname cannot be empty').optional().notEmpty()
-      req.checkBody('roles', 'roles cannot be empty').optional().notEmpty()
     } else {
       req.checkBody('email', 'email must be a valid email address').isEmail()
       req.checkBody('password', 'password is required').notEmpty()
-      req.checkBody('firstname', 'firstname is required').notEmpty()
-      req.checkBody('lastname', 'lastname is required').notEmpty()
-      req.checkBody('roles', 'roles is required').notEmpty()
     }
+
+    req.checkBody('firstname', 'firstname cannot be empty').optional().notEmpty()
+    req.checkBody('lastname', 'lastname cannot be empty').optional().notEmpty()
+    req.checkBody('roles', 'roles cannot be empty').optional().notEmpty()
 
     // SANITIZE
     req.sanitizeBody('email').trim()
@@ -69,7 +65,10 @@ module.exports = function(UsersApiPackage, app, config, db, auth) {
   }
 
   // Get Users
-  router.get('/users', auth.authenticate('jwt', { session: false }), (req, res, next) => {
+  router.get('/users', (req, res, next) => {
+
+    const User = db.models.User
+
     User
       .findAll()
       .then(users => {
@@ -81,11 +80,18 @@ module.exports = function(UsersApiPackage, app, config, db, auth) {
   })
 
   // Add User
-  router.post('/users', auth.authenticate('jwt', { session: false }), (req, res, next) => {
+  router.post('/users', (req, res, next) => {
+
+    const User = db.models.User
+    const userParams = req.body
 
     // VALIDATION
     const error = userValidation(req)
     if (error) return next(error)
+
+    // TODO: Check the invitation code
+
+    if (!userParams.roles) userParams.roles = 'authenticated'
 
     User
       .create(req.body)
@@ -97,7 +103,9 @@ module.exports = function(UsersApiPackage, app, config, db, auth) {
   })
 
   // Update User
-  router.put('/users/:id', auth.authenticate('jwt', { session: false }), (req, res, next) => {
+  router.put('/users/:id', (req, res, next) => {
+
+    const User = db.models.User
 
     // VALIDATION
     const error = userValidation(req, true)
@@ -117,32 +125,24 @@ module.exports = function(UsersApiPackage, app, config, db, auth) {
   })
 
   // Delete User
-  router.delete('/users/:id', auth.authenticate('jwt', { session: false }), (req, res, next) => {
+  router.delete('/users/:id', (req, res, next) => {
 
-    models.sequelize.transaction(t => {
-      return Token
-        .destroy({
-          where: { user_id: req.params.id }
-        }, { transaction: t })
-        .then(() => {
-          return User
-            .destroy({
-              where: { id: req.params.id }
-            })
-        })
-    })
-    .then(affectedRows => {
-      if(affectedRows < 1) throw null
-      res.status(202).json({ deleted: affectedRows })
-    })
-    .catch(next)
+    const User = db.models.User
+
+    return User
+      .destroy({
+        where: { id: req.params.id }
+      })
+      .catch(next)
 
   })
 
   // User auth
   router.post('/users/authenticate', (req, res, next) => {
 
-    req.checkBody('email', 'email must be a valid email address').isEmail()
+    const User = db.models.User
+
+    req.checkBody('email', 'email must be a valid email address').notEmpty().isEmail()
     req.checkBody('password', 'password is required').notEmpty()
 
     const errors = req.validationErrors()
@@ -191,30 +191,6 @@ module.exports = function(UsersApiPackage, app, config, db, auth) {
       })
       .catch(next)
 
-  })
-
-  // TODO: TO REMOVE
-  router.post('/users/hash-password', (req, res, next) => {
-
-    req.checkBody('password', 'password is required').notEmpty()
-
-    const errors = req.validationErrors()
-    if (errors) {
-      const error400 = new Error(errors[0].msg)
-      error400.code = 'BAD_REQUEST'
-      return next(error400)
-    }
-
-    const salt = User.makeSalt()
-    const hashedPassword = User.hashPassword(req.body.password, salt)
-
-    res
-      .status(202)
-      .json({
-        password: req.body.password,
-        salt: salt,
-        hashedPassword: hashedPassword
-      })
   })
 
   return router
