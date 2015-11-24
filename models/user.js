@@ -2,13 +2,10 @@
 
 const crypto = require('crypto')
 
-module.exports = function(sequelize, DataTypes) {
-
-  console.log('ciao')
-
+module.exports = function (sequelize, DataTypes) {
   const User = sequelize.define('User', {
-    id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true},
-    email: { type: DataTypes.STRING, unique: true, allowNull: false},
+    id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+    email: { type: DataTypes.STRING, unique: true, allowNull: false },
     password: {
       type: DataTypes.VIRTUAL,
       set (pwd) {
@@ -26,8 +23,8 @@ module.exports = function(sequelize, DataTypes) {
     },
     hashed_password: DataTypes.STRING,
     salt: DataTypes.STRING,
-    firstname: { type: DataTypes.STRING, allowNull: true},
-    lastname: { type: DataTypes.STRING, allowNull: true},
+    firstname: { type: DataTypes.STRING, allowNull: true },
+    lastname: { type: DataTypes.STRING, allowNull: true },
     roles: {
       type: DataTypes.ARRAY(DataTypes.STRING),
       set (role) {
@@ -45,8 +42,8 @@ module.exports = function(sequelize, DataTypes) {
       associate (models) {
 
       },
-      makeSalt() {
-        return crypto.randomBytes(16).toString('base64');
+      makeSalt () {
+        return crypto.randomBytes(16).toString('base64')
       },
       hashPassword (password, salt) {
         if (!password || !salt) return ''
@@ -55,8 +52,8 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     instanceMethods: {
-      makeSalt() {
-        return crypto.randomBytes(16).toString('base64');
+      makeSalt () {
+        return crypto.randomBytes(16).toString('base64')
       },
       hashPassword (password) {
         if (!password || !this.salt) return ''
@@ -73,5 +70,4 @@ module.exports = function(sequelize, DataTypes) {
   })
 
   return User
-
 }

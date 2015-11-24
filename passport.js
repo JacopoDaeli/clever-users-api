@@ -1,7 +1,6 @@
 const JwtStrategy = require('passport-jwt').Strategy
 
 module.exports = function (config, database, passport) {
-
   const opts = {}
 
   opts.secretOrKey = process.env.JWT_SECRET || 'shhh'
@@ -9,6 +8,7 @@ module.exports = function (config, database, passport) {
   // opts.audience = 'yoursite.net'
 
   passport.use(new JwtStrategy(opts, (jwtPayload, done) => {
+    const User = database.models.User
     User.findOne({
       where: { id: jwtPayload.id }
     }, (err, user) => {
@@ -17,5 +17,4 @@ module.exports = function (config, database, passport) {
       done(null, user)
     })
   }))
-
 }

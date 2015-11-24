@@ -1,8 +1,5 @@
 'use strict'
 
-// Require CleverCore
-const CleverCore = require('clever-core')
-
 // Packages dependencies
 const express = require('express')
 const router = express.Router()
@@ -10,8 +7,7 @@ const router = express.Router()
 const jwt = require('jsonwebtoken')
 
 // Exports
-module.exports = function(UsersApiPackage, app, config, db, auth) {
-
+module.exports = function (UsersApiPackage, app, config, db, auth) {
   // TODO: isAuthorized && isRevoked
   // const isAuthenticated = ejwt({ secret: process.env.JWT_SECRET || 'shhh' })
 
@@ -21,7 +17,7 @@ module.exports = function(UsersApiPackage, app, config, db, auth) {
 
   function checkSequelizeError (next, err) {
     if (err && err.name) {
-      if (['ValidationError', 'SequelizeUniqueConstraintError'].indexOf() === -1 ) {
+      if (['ValidationError', 'SequelizeUniqueConstraintError'].indexOf() === -1) {
         if (!err.errors) return next(err)
         const error400 = new Error(err.errors[0].message)
         error400.code = 'BAD_REQUEST'
@@ -33,7 +29,6 @@ module.exports = function(UsersApiPackage, app, config, db, auth) {
   }
 
   function userValidation (req, update) {
-
     // VALIDATION
     if (update === true) {
       req.checkBody('email', 'email must be a valid email address').optional().isEmail()
@@ -61,12 +56,10 @@ module.exports = function(UsersApiPackage, app, config, db, auth) {
     }
 
     return null
-
   }
 
   // Get Users
   router.get('/users', (req, res, next) => {
-
     const User = db.models.User
 
     User
@@ -81,7 +74,6 @@ module.exports = function(UsersApiPackage, app, config, db, auth) {
 
   // Add User
   router.post('/users', (req, res, next) => {
-
     const User = db.models.User
     const userParams = req.body
 
@@ -99,12 +91,10 @@ module.exports = function(UsersApiPackage, app, config, db, auth) {
         res.status(201).json(user.get({plain: true}))
       })
       .catch(checkSequelizeError.bind(null, next))
-
   })
 
   // Update User
   router.put('/users/:id', (req, res, next) => {
-
     const User = db.models.User
 
     // VALIDATION
@@ -117,16 +107,14 @@ module.exports = function(UsersApiPackage, app, config, db, auth) {
       })
       .then(affectedRows => {
         // TODO: check why affectedRows is an array instead Integer
-        if(affectedRows[0] < 1) throw null
+        if (affectedRows[0] < 1) throw null
         res.status(202).json({ updated: affectedRows[0] })
       })
       .catch(checkSequelizeError.bind(null, next))
-
   })
 
   // Delete User
   router.delete('/users/:id', (req, res, next) => {
-
     const User = db.models.User
 
     return User
@@ -134,12 +122,10 @@ module.exports = function(UsersApiPackage, app, config, db, auth) {
         where: { id: req.params.id }
       })
       .catch(next)
-
   })
 
   // User auth
   router.post('/users/authenticate', (req, res, next) => {
-
     const User = db.models.User
 
     req.checkBody('email', 'email must be a valid email address').notEmpty().isEmail()
@@ -158,22 +144,17 @@ module.exports = function(UsersApiPackage, app, config, db, auth) {
         where: { email: req.body.email }
       })
       .then(user => {
-
         if (!user) {
-
           const error401User = new Error('Authentication failed because user has not been found')
           error401User.code = 'UNAUTHORIZED'
           return next(error401User)
-
         } else if (user) {
-
           // check if password matches
           if (user.get('hashed_password') !== user.hashPassword(req.body.password)) {
             const error401Passowrd = new Error('Authentication failed because password is wrong')
             error401Passowrd.code = 'UNAUTHORIZED'
             return next(error401Passowrd)
           } else {
-
             // if user is found and password is right create a token
             const token = jwt.sign(user.toJSON(), process.env.JWT_SECRET || 'shhh', {
               expiresInMinutes: 1440 // expires in 24 hours
@@ -186,13 +167,10 @@ module.exports = function(UsersApiPackage, app, config, db, auth) {
                 token: token
               })
           }
-
         }
       })
       .catch(next)
-
   })
 
   return router
-
 }
