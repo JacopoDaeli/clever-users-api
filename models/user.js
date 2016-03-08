@@ -40,7 +40,7 @@ module.exports = function (sequelize, DataTypes) {
     tableName: 'user',
     classMethods: {
       associate (models) {
-
+        // Maybe one day :-)
       },
       makeSalt () {
         return crypto.randomBytes(16).toString('base64')
@@ -64,6 +64,7 @@ module.exports = function (sequelize, DataTypes) {
         const obj = this.get({ plain: true })
         delete obj.hashed_password
         delete obj.salt
+        obj.role = this.roles[0]
         return obj
       }
     }
