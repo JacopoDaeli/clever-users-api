@@ -4,6 +4,9 @@
   "visible": false,
   "author": "Jacopo Daeli <jacopo.daeli@gmail.com>",
   "clever": "0.1.x",
+  "scripts": {
+    "build": "echo \"Nothing to build. Continue.\""
+  },
   "dependencies": {
     "jsonwebtoken": "^5.4.0",
     "passport-jwt": "^1.2.1"
